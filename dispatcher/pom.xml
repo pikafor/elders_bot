@@ -11,7 +11,7 @@
     <url>http://maven.apache.org</url>
 
     <properties>
-        <telegrambot.starter.version>5.0.1</telegrambot.starter.version>
+        <telegrambot.starter.version>6.8.0</telegrambot.starter.version>
     </properties>
 
     <dependencies>
