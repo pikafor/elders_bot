@@ -25,6 +25,8 @@
             <artifactId>telegrambots-spring-boot-starter</artifactId>
             <version>${telegrambot.starter.version}</version>
         </dependency>
+
+
     </dependencies>
     <build>
         <plugins>
