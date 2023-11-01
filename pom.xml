@@ -10,6 +10,7 @@
   <modules>
     <module>dispatcher</module>
     <module>common-rabbitmq</module>
+    <module>jbdc</module>
   </modules>
 
   <parent>
