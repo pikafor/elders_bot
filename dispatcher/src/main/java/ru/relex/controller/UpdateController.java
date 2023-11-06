@@ -4,8 +4,14 @@ import lombok.extern.log4j.Log4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.relex.service.UpdateProducer;
 import ru.relex.utils.MessageUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static ru.relex.RabbitQueue.*;
 
@@ -26,6 +32,14 @@ public class UpdateController {
     }
 
     public  void processUpdate(Update update) {
+        KeyboardController keyboardController = new KeyboardController();
+        long chat_id = update.getMessage().getChatId();
+        try {
+            telegramBot.execute(keyboardController.authorization(chat_id));
+        } catch (TelegramApiException e) {
+            throw new RuntimeException(e);
+        }
+
         if (update == null) {
             log.error("Received update is null");
             return;
