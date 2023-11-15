@@ -36,7 +36,6 @@ public class UsersGui {
 
             switch (choice) {
                 case 1: {
-                    Pairs pairs = new Pairs();
                     System.out.println("Введите дату");
                     String tableName = scanner.next();
                     sqlController.addColumn('"' + tableName + '"');
