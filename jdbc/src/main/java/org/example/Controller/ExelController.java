@@ -16,6 +16,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
 public class ExelController {
+    private String path = "C:\\Users\\Иван\\Desktop\\write.xlsx";
     private void setRegionBorderWithMedium(CellRangeAddress region, Sheet sheet) {
         RegionUtil.setBorderBottom(BorderStyle.MEDIUM, region, sheet);
         RegionUtil.setBorderLeft(BorderStyle.MEDIUM, region, sheet);
@@ -72,8 +73,7 @@ public class ExelController {
                     columnCount += 2;
                 }
             }
-            setRegionBorderWithMedium(new CellRangeAddress(0, 5, 0, resultSetMetaData.getColumnCount() + 1), sheet);
-            FileOutputStream fileOutput = new FileOutputStream("C:\\Users\\Иван\\Desktop\\write.xlsx");
+            FileOutputStream fileOutput = new FileOutputStream(path);
             workbook.write(fileOutput);
             fileOutput.close();
         } catch (FileNotFoundException e) {
@@ -83,5 +83,9 @@ public class ExelController {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public String getPath() {
+        return path;
     }
 }

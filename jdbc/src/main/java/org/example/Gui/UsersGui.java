@@ -3,8 +3,9 @@ package org.example.Gui;
 import org.example.Connection.SqlConnection;
 import org.example.Controller.ExelController;
 import org.example.Controller.SqlController;
-import org.example.Pairs;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class UsersGui {
@@ -15,25 +16,23 @@ public class UsersGui {
         sqlController = new SqlController(sqlConnection.getConnection());
     }
 
-    public void mainProcess() {
+    public void mainProcess(int choice) {
         //sqlController.addStudent();
-        while (isRequest) {
-            int choice = 0;
 
-            System.out.println("1) Добавить пару");
-            System.out.println("2) Показать присутсвующих");
-            System.out.println("3) Добавить студента");
-            System.out.println("4) Отметить");
-            System.out.println("5) конвертировать в exel");
-            System.out.print("Выберите действие: ");
+//            System.out.println("1) Добавить пару");
+//            System.out.println("2) Показать присутсвующих");
+//            System.out.println("3) Добавить студента");
+//            System.out.println("4) Отметить");
+//            System.out.println("5) конвертировать в exel");
+//            System.out.print("Выберите действие: ");
 
             Scanner scanner = new Scanner(System.in);
 
-            try {
-                choice = scanner.nextInt();
-            } catch (Exception e) {
-                System.out.println("Вы ввели не число");
-            }
+//            try {
+//                choice = scanner.nextInt();
+//            } catch (Exception e) {
+//                System.out.println("Вы ввели не число");
+//            }
 
             switch (choice) {
                 case 1: {
@@ -67,7 +66,7 @@ public class UsersGui {
                 }
                 case 5: {
                     ExelController exelController = new ExelController();
-                    exelController.write(" ", sqlController.getResultSetMetaData("test"), sqlController.getResult("test"), sqlController.getResultSetMetaData("pairs"), sqlController.getResult("pairs"), sqlController.lastId("pairs"));
+                    //return exelController.write(" ", sqlController.getResultSetMetaData("test"), sqlController.getResult("test"), sqlController.getResultSetMetaData("pairs"), sqlController.getResult("pairs"), sqlController.lastId("pairs"));
                     break;
                 }
                 default: {
@@ -76,5 +75,38 @@ public class UsersGui {
                 }
             }
         }
-    }
+
+        public void getExelTable() {
+            ExelController exelController = new ExelController();
+            exelController.write(" ", sqlController.getResultSetMetaData("test"), sqlController.getResult("test"), sqlController.getResultSetMetaData("pairs"), sqlController.getResult("pairs"), sqlController.lastId("pairs"));
+        }
+        public String getPath() {
+            ExelController exelController = new ExelController();
+            return exelController.getPath();
+        }
+        public void setNewStudent(String text) {
+            List<String> splitArray = split(text);
+            sqlController.addStudent(splitArray.get(0), splitArray.get(1));
+        }
+
+        private List<String> split(String text) {
+            List<String> splitArray = new ArrayList<>();
+            String interim = "";
+            int _i = 0;
+
+            for (int i = 0; i < text.length(); i++) {
+                if (text.charAt(i) == ' ') {
+                    splitArray.add(interim);
+                    _i = i;
+                    break;
+                }
+                interim += text.charAt(i);
+            }
+            interim = "";
+            for (int i = _i; i < text.length(); i++) {
+                interim += text.charAt(i);
+            }
+            splitArray.add(interim);
+            return splitArray;
+        }
 }

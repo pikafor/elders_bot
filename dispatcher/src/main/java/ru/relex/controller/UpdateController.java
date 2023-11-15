@@ -1,17 +1,22 @@
 package ru.relex.controller;
 
 import lombok.extern.log4j.Log4j;
+import org.example.Connection.SqlConnection;
+import org.example.Controller.SqlController;
+import org.example.Gui.UsersGui;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.Document;
+import org.telegram.telegrambots.meta.api.objects.File;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import ru.relex.User;
 import ru.relex.service.UpdateProducer;
 import ru.relex.utils.MessageUtils;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.FileOutputStream;
 
 import static ru.relex.RabbitQueue.*;
 
@@ -32,23 +37,146 @@ public class UpdateController {
     }
 
     public  void processUpdate(Update update) {
-        KeyboardController keyboardController = new KeyboardController();
-        long chat_id = update.getMessage().getChatId();
-        try {
-            telegramBot.execute(keyboardController.authorization(chat_id));
-        } catch (TelegramApiException e) {
-            throw new RuntimeException(e);
-        }
 
-        if (update == null) {
-            log.error("Received update is null");
-            return;
-        }
-        if (update.getMessage() != null) {
-            distributeMessagesByType(update);
+        if (!telegramBot.getIsWait()) {
+            if (telegramBot.getUser().isAuth()) {
+                if (update.hasMessage() && update.getMessage().hasText()) {
+                    long chat_id = update.getMessage().getChatId();
+                    if (update == null) {
+                        log.error("Received update is null");
+                        return;
+                    }
+                    if (update.getMessage() != null) {
+                        distributeMessagesByType(update);
+                    } else {
+                        log.error("Received unsupported message type is Received: " + update);
+                    }
+                }
+                if (update.hasCallbackQuery()) {
+                    String call_data = update.getCallbackQuery().getData();
+                    if (call_data.equals("EXCEL")) {
+                        SqlConnection sqlConnection = new SqlConnection();
+                        sqlConnection.Connection();
+                        UsersGui usersGui = new UsersGui(sqlConnection);
+                        SendDocument sendDocument = new SendDocument();
+                        sendDocument.setChatId(update.getCallbackQuery().getFrom().getId());
+                        usersGui.getExelTable();
+                        String path = "C:\\Users\\Иван\\Desktop\\write.xlsx";
+                        InputFile inputFile = new InputFile(new java.io.File(path));
+                        sendDocument.setDocument(inputFile);
+                        telegramBot.sendAnswerDocument(sendDocument);
+                    } else if (call_data.equals("ДОБАВИТЬ_СТУДЕНТА")) {
+                        SendMessage message = new SendMessage();
+                        message.setChatId(update.getCallbackQuery().getFrom().getId());
+                        message.setText("Введите фио");
+                        telegramBot.sendAnswerMessage(message);
+                        telegramBot.setLastMessage("ДОБАВИТЬ_СТУДЕНТА");
+                        System.out.println(1);
+                        telegramBot.setWait(true);
+                    }
+                }
+            } else {
+                KeyboardController keyboardController = new KeyboardController();
+                if (update.hasMessage() && update.getMessage().hasText()) {
+                    long chat_id = update.getMessage().getChatId();
+                    try {
+                        telegramBot.execute(keyboardController.authorization(chat_id));
+                    } catch (TelegramApiException e) {
+                        throw new RuntimeException(e);
+                    }
+                } if (update.hasCallbackQuery()) {
+
+                    String call_data = update.getCallbackQuery().getData();
+
+                    if (call_data.equals("РЕГИСТРАЦИЯ")) {
+                        SendMessage message = new SendMessage();
+                        message.setChatId(update.getCallbackQuery().getFrom().getId());
+                        message.setText("Введите логин");
+                        telegramBot.sendAnswerMessage(message);
+                        telegramBot.setWait(true);
+                        telegramBot.setLastMessage("РЕГИСТРАЦИЯ_ЛОГИН");
+                    } else {
+                        SendMessage message = new SendMessage();
+                        message.setChatId(update.getCallbackQuery().getFrom().getId());
+                        message.setText("Введите логин");
+                        telegramBot.sendAnswerMessage(message);
+                        telegramBot.setWait(true);
+                        telegramBot.setLastMessage("ВХОД_ЛОГИН");
+                    }
+                }
+            }
         } else {
-            log.error("Received unsupported message type is Received: " + update);
+            KeyboardController keyboardController = new KeyboardController();
+            if (update.getMessage().hasText()) {
+                if (telegramBot.getLastMessage().equals("РЕГИСТРАЦИЯ_ЛОГИН")) {
+                    telegramBot.getUser().setLogIn(update.getMessage().getText());
+                    SendMessage message = new SendMessage();
+                    message.setChatId(update.getMessage().getChatId());
+                    message.setText("Введите пароль");
+                    telegramBot.sendAnswerMessage(message);
+                    telegramBot.setLastMessage("РЕГИСТРАЦИЯ_ПАРОЛЬ");
+                } else if (telegramBot.getLastMessage().equals("РЕГИСТРАЦИЯ_ПАРОЛЬ")) {
+                    telegramBot.getUser().setPassword(update.getMessage().getText());
+                    telegramBot.setWait(false);
+                    SendMessage message = new SendMessage();
+                    message.setChatId(update.getMessage().getChatId());
+                    message.setText("Вы зарегестрированы");
+                    telegramBot.sendAnswerMessage(message);
+                    telegramBot.setLastMessage("ГЛАВНОЕ_МЕНЮ");
+                    try {
+                        telegramBot.execute(keyboardController.mainMenu(update.getMessage().getChatId()));
+                    } catch (TelegramApiException e) {
+                        throw new RuntimeException(e);
+                    }
+                } else if (telegramBot.getLastMessage().equals("ВХОД_ЛОГИН")) {
+                    telegramBot.getUser().setLogIn(update.getMessage().getText());
+                    SendMessage message = new SendMessage();
+                    message.setChatId(update.getMessage().getChatId());
+                    message.setText("Введите пароль");
+                    telegramBot.sendAnswerMessage(message);
+                    telegramBot.setLastMessage("ВХОД_ПАРОЛЬ");
+                } else if (telegramBot.getLastMessage().equals("ВХОД_ПАРОЛЬ")) {
+                    telegramBot.getUser().setPassword(update.getMessage().getText());
+                    telegramBot.setWait(false);
+                    SendMessage message = new SendMessage();
+                    message.setChatId(update.getMessage().getChatId());
+                    message.setText("Вы вошли");
+                    telegramBot.sendAnswerMessage(message);
+                    telegramBot.setLastMessage("ГЛАВНОЕ_МЕНЮ");
+                    try {
+                        telegramBot.execute(keyboardController.mainMenu(update.getMessage().getChatId()));
+                    } catch (TelegramApiException e) {
+                        throw new RuntimeException(e);
+                    }
+                } else if (telegramBot.getLastMessage().equals("ДОБАВИТЬ_СТУДЕНТА")) {
+                    System.out.println(2);
+                    SqlConnection sqlConnection = new SqlConnection();
+                    sqlConnection.Connection();
+                    UsersGui usersGui = new UsersGui(sqlConnection);
+                    usersGui.setNewStudent(update.getMessage().getText());
+                    telegramBot.setWait(false);
+                }
+            }
         }
+    }
+
+    private boolean checkLog() {
+        if (telegramBot.getUser().getLogIn() != null)
+            return true;
+        return false;
+    }
+    private boolean checkPass() {
+        if (telegramBot.getUser().getPassword() != null)
+            return true;
+        return false;
+    }
+    private void logIn(Update update) {
+        long chat_id = update.getCallbackQuery().getMessage().getChatId();
+
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(chat_id);
+        sendMessage.setText("Введите логин");
+        telegramBot.sendAnswerMessage(sendMessage);
     }
 
     private void distributeMessagesByType(Update update) {
@@ -66,7 +194,8 @@ public class UpdateController {
 
     private void setUnsupportedMessageTypeView(Update update) {
         var sendMessage = messageUtils.generateSendMessageWithText(update, "Неподдерживаемый тип сообщения!");
-        setView(sendMessage);
+        InputFile inputFile = new InputFile("C:\\Users\\Иван\\Desktop\\a.zip");
+        setView(update.getCallbackQuery().getMessage().getChatId(), "", inputFile);
     }
 
     private void setFileIsReceivesView(Update update) {
@@ -74,6 +203,13 @@ public class UpdateController {
         setView(sendMessage);
     }
 
+    private void setView(long chat_id, String caption, InputFile sendFile) {
+        SendDocument sendDocument = new SendDocument();
+        sendDocument.setChatId(chat_id);
+        sendDocument.setCaption(caption);
+        sendDocument.setDocument(sendFile);
+        telegramBot.sendAnswerDocument(sendDocument);
+    }
     private void setView(SendMessage sendMessage) {
         telegramBot.sendAnswerMessage(sendMessage);
     }
