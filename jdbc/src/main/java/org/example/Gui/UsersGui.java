@@ -16,7 +16,7 @@ public class UsersGui {
         sqlController = new SqlController(sqlConnection.getConnection());
     }
 
-    public void mainProcess(int choice) {
+    public void mainProcess(int choice) { //метод для отладки
         //sqlController.addStudent();
 
 //            System.out.println("1) Добавить пару");
@@ -27,12 +27,6 @@ public class UsersGui {
 //            System.out.print("Выберите действие: ");
 
             Scanner scanner = new Scanner(System.in);
-
-//            try {
-//                choice = scanner.nextInt();
-//            } catch (Exception e) {
-//                System.out.println("Вы ввели не число");
-//            }
 
             switch (choice) {
                 case 1: {
