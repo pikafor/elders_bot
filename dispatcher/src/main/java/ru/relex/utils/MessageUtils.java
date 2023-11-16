@@ -16,4 +16,13 @@ public class MessageUtils {
 
         return sendMessage;
     }
+
+    public SendMessage generateSendMessageWithCallBackQuery(Update update, String text) {
+        var message = update.getCallbackQuery();
+        var sendMessage = new SendMessage();
+        sendMessage.setChatId(message.getFrom().getId());
+        sendMessage.setText(text);
+
+        return sendMessage;
+    }
 }

@@ -102,10 +102,15 @@ public class UsersGui {
                 interim += text.charAt(i);
             }
             interim = "";
-            for (int i = _i; i < text.length(); i++) {
+            for (int i = _i+1; i < text.length(); i++) {
                 interim += text.charAt(i);
             }
             splitArray.add(interim);
             return splitArray;
+        }
+
+        public void mention(String text) {
+            List<String> splitArray = split(text);
+            sqlController.mention(splitArray.get(0), splitArray.get(1));
         }
 }
