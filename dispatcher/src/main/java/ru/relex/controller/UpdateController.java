@@ -66,10 +66,10 @@ public class UpdateController {
                         sendDocument.setDocument(inputFile);
                         telegramBot.sendAnswerDocument(sendDocument);
                     } else if (call_data.equals("ДОБАВИТЬ_СТУДЕНТА")) {
-                        messageUtils.generateSendMessageWithCallBackQuery(update, "Введите фио");
+                        telegramBot.sendAnswerMessage(messageUtils.generateSendMessageWithCallBackQuery(update, "Введите фио"));
                         setExpectations("ДОБАВИТЬ_СТУДЕНТА", true);
                     } else if (call_data.equals("ОТМЕТИТЬ")) {
-                        messageUtils.generateSendMessageWithCallBackQuery(update, "Введите фамилию и дату через пробел");
+                        telegramBot.sendAnswerMessage(messageUtils.generateSendMessageWithCallBackQuery(update, "Введите фамилию и дату через пробел"));
                         setExpectations("ОТМЕТИТЬ", true);
                     }
                 }
@@ -167,10 +167,10 @@ public class UpdateController {
             String call_data = update.getCallbackQuery().getData();
 
             if (call_data.equals("РЕГИСТРАЦИЯ")) {
-                messageUtils.generateSendMessageWithCallBackQuery(update, "Введите логин");
+                telegramBot.sendAnswerMessage(messageUtils.generateSendMessageWithCallBackQuery(update, "Введите логин"));
                 setExpectations("РЕГИСТРАЦИЯ_ЛОГИН", true);
             } else {
-                messageUtils.generateSendMessageWithCallBackQuery(update, "Введите логин");
+                telegramBot.sendAnswerMessage(messageUtils.generateSendMessageWithCallBackQuery(update, "Введите логин"));
                 setExpectations("ВХОД_ЛОГИН", true);
             }
         }
@@ -181,11 +181,11 @@ public class UpdateController {
         if (update.getMessage().hasText()) {
             if (telegramBot.getLastMessage().equals("РЕГИСТРАЦИЯ_ЛОГИН")) {
                 telegramBot.getUser().setLogIn(update.getMessage().getText());
-                messageUtils.generateSendMessageWithText(update, "Введите пароль");
+                telegramBot.sendAnswerMessage(messageUtils.generateSendMessageWithText(update, "Введите пароль"));
                 setExpectations("РЕГИСТРАЦИЯ_ПАРОЛЬ", true);
             } else if (telegramBot.getLastMessage().equals("РЕГИСТРАЦИЯ_ПАРОЛЬ")) {
                 telegramBot.getUser().setPassword(update.getMessage().getText());
-                messageUtils.generateSendMessageWithText(update, "Вы зарегестрированы");
+                telegramBot.sendAnswerMessage(messageUtils.generateSendMessageWithText(update, "Вы зарегестрированы"));
                 setExpectations("ГЛАВНОЕ_МЕНЮ", false);
                 try {
                     telegramBot.execute(keyboardController.mainMenu(update.getMessage().getChatId()));
@@ -194,11 +194,11 @@ public class UpdateController {
                 }
             } else if (telegramBot.getLastMessage().equals("ВХОД_ЛОГИН")) {
                 telegramBot.getUser().setLogIn(update.getMessage().getText());
-                messageUtils.generateSendMessageWithText(update, "Введите пароль");
+                telegramBot.sendAnswerMessage(messageUtils.generateSendMessageWithText(update, "Введите пароль"));
                 setExpectations("ВХОД_ПАРОЛЬ", true);
             } else if (telegramBot.getLastMessage().equals("ВХОД_ПАРОЛЬ")) {
                 telegramBot.getUser().setPassword(update.getMessage().getText());
-                messageUtils.generateSendMessageWithText(update, "Вы вошли");
+                telegramBot.sendAnswerMessage(messageUtils.generateSendMessageWithText(update, "Вы вошли"));
                 setExpectations("Вы вошли", false);
                 try {
                     telegramBot.execute(keyboardController.mainMenu(update.getMessage().getChatId()));

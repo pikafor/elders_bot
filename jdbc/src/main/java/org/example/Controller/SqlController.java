@@ -7,20 +7,47 @@ public class SqlController {
     public SqlController(Connection connection) {
         this.connection = connection;
     }
-
-    private void setString(PreparedStatement preparedStatement, int id, String value) {
+    public ResultSet getResult(String db) {
         try {
-            preparedStatement.setString(id, value);
+            return connection.createStatement().executeQuery("select * from " + db + " ORDER BY id ASC");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
-    private void setInt(PreparedStatement preparedStatement, int id, int value) {
+    public ResultSetMetaData getResultSetMetaData(String db) {
         try {
-            preparedStatement.setInt(id, value);
+            return connection.createStatement().executeQuery("select * from " + db +" ORDER BY id ASC").getMetaData();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+    public void setPairs(String date, String type) {
+        int maxId = lastId("pairs");
+        String sql = "insert into pairs (id, pairs_date, pairs_type) values (?, ?, ?);";
+        PreparedStatement preparedStatement;
+        try {
+            preparedStatement = connection.prepareStatement(sql);
+            setInt(preparedStatement, 1, maxId);
+            setString(preparedStatement, 2, date);
+            setString(preparedStatement, 3, type);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    public int lastId(String tableName) {
+        int idCount = 1;
+        try {
+            String sql = "select * from " + tableName + " ORDER BY id ASC";
+            ResultSet resultSet = connection.createStatement().executeQuery(sql);
+
+            while (resultSet.next()){
+                idCount++;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return idCount;
     }
     public void createTable() {
         String tableName = " test ";
@@ -44,7 +71,6 @@ public class SqlController {
             throw new RuntimeException(e);
         }
     }
-
     public void mention(String lastName, String date) {
         String pairDate = '"' + date + '"';
         String sql = "update test set " + pairDate + " = 'Н' where last_name = '" + lastName + "'";
@@ -57,7 +83,6 @@ public class SqlController {
             throw new RuntimeException(e);
         }
     }
-
     public void showTable() {
         String sql = "select * from test ORDER BY id ASC";
         Statement statement;
@@ -109,49 +134,19 @@ public class SqlController {
             throw new RuntimeException(e);
         }
     }
-
-    public ResultSet getResult(String db) {
+    private void setString(PreparedStatement preparedStatement, int id, String value) {
         try {
-            return connection.createStatement().executeQuery("select * from " + db + " ORDER BY id ASC");
+            preparedStatement.setString(id, value);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
-    public ResultSetMetaData getResultSetMetaData(String db) {
+    private void setInt(PreparedStatement preparedStatement, int id, int value) {
         try {
-            return connection.createStatement().executeQuery("select * from " + db +" ORDER BY id ASC").getMetaData();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void setPairs(String date, String type) {
-        int maxId = lastId("pairs");
-        String sql = "insert into pairs (id, pairs_date, pairs_type) values (?, ?, ?);";
-        PreparedStatement preparedStatement;
-        try {
-            preparedStatement = connection.prepareStatement(sql);
-            setInt(preparedStatement, 1, maxId);
-            setString(preparedStatement, 2, date);
-            setString(preparedStatement, 3, type);
-            preparedStatement.executeUpdate();
+            preparedStatement.setInt(id, value);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public int lastId(String tableName) {
-        int idCount = 1;
-        try {
-            String sql = "select * from " + tableName + " ORDER BY id ASC";
-            ResultSet resultSet = connection.createStatement().executeQuery(sql);
-
-            while (resultSet.next()){
-                idCount++;
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return idCount;
-    }
 }
